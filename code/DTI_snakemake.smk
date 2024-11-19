@@ -273,7 +273,7 @@ rule merge_all_AP_niftis:
 ### topup ###
 
 # path to config file:
-b02b0 = script_dir+"additional_scripts/b02b0_4.cnf"
+b02b0 = script_dir+"b02b0_4.cnf"
 
 rule topup:
     input:
