@@ -69,7 +69,7 @@ rule all:
 # extract ROIs
 rule extract_roi:
     input:
-        lambda wc: "origs/" + conf["sample_ids"][conf["b_values"].index(wc.number)] + f"_ep2d_diff{wc.number}_74_{'AP' if wc.number == '500' else 'PA'}_long.nii.gz"
+        lambda wc: "origs/" + conf["sample_ids"][conf["b_values"].index(wc.number)] + f"_ep2d_diff{wc.number}_{'AP' if wc.number == '500' else 'PA'}_long.nii.gz"
     output:
         "con/ddiff_{number}.nii.gz"
     params:
