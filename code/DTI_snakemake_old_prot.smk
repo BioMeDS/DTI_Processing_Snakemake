@@ -69,7 +69,7 @@ rule all:
 # extract ROIs
 rule extract_roi:
     input:
-        lambda wc: [x for x in conf["niftis"] if f"diff{wc}" in x][0]
+        lambda wc: [x for x in conf["niftis"] if f"diff{wc.number}" in x][0]
     output:
         "con/ddiff_{number}.nii.gz"
     params:
