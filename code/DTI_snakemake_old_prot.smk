@@ -123,7 +123,7 @@ def generate_set_merge_input(wc):
     bvec_in = [x for x in bvec_index[wc["number"]] if not isinstance(bvec_lists[wc["number"]][x], int)]
     position = int(wc["index"]) * 3
     file_names = []
-    for x in similar_triplets_list[int(wc["index"])]
+    for x in similar_triplets_list[int(wc["index"])]:
         file_names.append(f"con/dd{wc['number']}_{x:04d}.nii.gz")
     return file_names
 
