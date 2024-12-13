@@ -2,6 +2,11 @@ import argparse
 
 def process_line(line):
     elements = line.split()
+    # hacky workaround to not collapse bvals if there are less than 100 elements (likely no replicates)
+    # anyway here the combination of triplicates is still hardcoded and would not allow for other replicate numbers
+    # TODO this should be properly implemented by taking the bvecs into account
+    if len(elements) < 100:
+        return line
     processed_elements = []
 
     current_count = 0
