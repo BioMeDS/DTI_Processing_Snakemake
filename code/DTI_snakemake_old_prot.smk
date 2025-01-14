@@ -109,19 +109,10 @@ for b_value in conf["b_values"]:
 
 bvec_index = {b_value: np.arange(len(bvec_lists[b_value][:bval_length])) for b_value in bvec_lists}
 
-# filter out integers -> everything but 0 stays
-#def generate_triplet_input(wc):
-#    bvec_in = [x for x in bvec_index[wc["number"]] if not isinstance(bvec_lists[wc["number"]][x], int)]
-#    position = int(wc["index"]) * 3
-#    file_numbers = bvec_in[position:position+3]
-#    file_names = [f"con/dd{wc['number']}_{x:04d}.nii.gz" for x in file_numbers]
-#    return file_names
-
-# same as previous function, but isn't fixed for sets of three,
 # takes indices of sublists of similar_triplets_list to determine which positions should be merged
+# NOTE: similar_triplets_list is a misnomer -> it might not be triplicates, but any number of similar vectors
 def generate_set_merge_input(wc):
     bvec_in = [x for x in bvec_index[wc["number"]] if not isinstance(bvec_lists[wc["number"]][x], int)]
-    position = int(wc["index"]) * 3
     file_names = []
     for x in similar_triplets_list[int(wc["index"])]:
         file_names.append(f"con/dd{wc['number']}_{x:04d}.nii.gz")
