@@ -17,7 +17,7 @@ numbers = [line.strip().split() for line in lines]
 numbers = [[float(num) for num in line] for line in numbers]
 
 #call function from helper_functions
-zero_triplets, similar_triplets_list = helper_functions.get_similar_vectors(numbers)
+zero_indices, replicate_indices = helper_functions.get_similar_vectors(numbers)
 
 # get length of bval content
 # list of all bval files
@@ -110,11 +110,9 @@ for b_value in conf["b_values"]:
 bvec_index = {b_value: np.arange(len(bvec_lists[b_value][:bval_length])) for b_value in bvec_lists}
 
 # takes indices of sublists of similar_triplets_list to determine which positions should be merged
-# NOTE: similar_triplets_list is a misnomer -> it might not be triplicates, but any number of similar vectors
 def generate_set_merge_input(wc):
-    bvec_in = [x for x in bvec_index[wc["number"]] if not isinstance(bvec_lists[wc["number"]][x], int)]
     file_names = []
-    for x in similar_triplets_list[int(wc["index"])]:
+    for x in replicate_indices[int(wc["index"])]:
         file_names.append(f"con/dd{wc['number']}_{x:04d}.nii.gz")
     return file_names
 

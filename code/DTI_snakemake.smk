@@ -16,7 +16,7 @@ numbers = [line.strip().split() for line in lines]
 numbers = [[float(num) for num in line] for line in numbers]
 
 #call function from helper_functions
-zero_triplets, similar_triplets_list = helper_functions.get_similar_vectors(numbers)
+zero_indices, replicate_indices = helper_functions.get_similar_vectors(numbers)
 
 # get length of bval content
 # list of all bval files
@@ -117,23 +117,11 @@ for b_value in conf["b_values"]:
 
 bvec_index = {b_value: np.arange(len(bvec_lists[b_value][:bval_length])) for b_value in bvec_lists}
 
-# filter out integers -> everything but 0 stays
-#def generate_triplet_input(wc):
-#    bvec_in = [x for x in bvec_index[wc["number"]] if not isinstance(bvec_lists[wc["number"]][x], int)]
-#    position = int(wc["index"]) * 3
-#    file_numbers = bvec_in[position:position+3]
-#    file_names = [f"con/dd{wc['number']}_{x:04d}.nii.gz" for x in file_numbers]
-#    return file_names
-
-# same as previous function, but isn't fixed for sets of three,
-# takes indices of sublists of similar_triplets_list to determine which positions should be merged
+# takes indices of sublists of replicates to determine which positions should be merged
 def generate_set_merge_input(wc):
-    bvec_in = [x for x in bvec_index[wc["number"]] if not isinstance(bvec_lists[wc["number"]][x], int)]
-    position = int(wc["index"]) * 3
-    for y in range(len(similar_triplets_list)):
-        set_length = len(similar_triplets_list[y])
-        file_numbers = bvec_in[position:position+set_length]
-        file_names = [f"con/dd{wc['number']}_{x:04d}.nii.gz" for x in file_numbers]
+    file_names = []
+    for x in replicate_indices[int(wc["index"])]:
+        file_names.append(f"con/dd{wc['number']}_{x:04d}.nii.gz")
     return file_names
 
 # filter out float values -> only 0s stay
@@ -141,14 +129,6 @@ def generate_b0_input(wc):
     bvec_ind = [x for x in bvec_index[wc["number"]] if isinstance(bvec_lists[wc["number"]][x], int)]
     b0_file_names = [f"con/dd{wc['number']}_{x:04d}.nii.gz" for x in bvec_ind]
     return b0_file_names
-
-#rule merge_triplet:
-#    input:
-#        generate_triplet_input
-#    output:
-#        "con/dd{number}_c{index}.nii.gz"
-#    shell:
-#        "fslmerge -t {output} {input}"
 
 rule merge_sets:
     input:
