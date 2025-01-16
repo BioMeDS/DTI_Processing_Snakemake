@@ -163,14 +163,16 @@ rule merge_files:
     shell:
         "fslmerge -t {output} {input}"
 
-# rule to modify the bvec and bval files: shortens number of non-0 entries so that three become one
+# rule to modify the bvec and bval files: shortens number of non-0 entries so that replicates are collapsed
 rule shorten_bvec_bval:
     input:
-        "origs/{sample}{ext}"
+        bval="origs/{sample}.bval",
+        bvec="origs/{sample}.bvec",
     output:
-        "bvecs_bvals/{sample}_short{ext}"
+        bval="bvecs_bvals/{sample}_short.bval",
+        bvec="bvecs_bvals/{sample}_short.bvec",
     shell:
-        "python {script_dir}shorten_bval.py {input} {output}"
+        "python {script_dir}shorten_bval_bvec.py {input.bval} {input.bvec} {output.bval} {output.bvec}"
 
 # rule to sort bval content -> first "0"s, then other values
 rule sort_bval:
