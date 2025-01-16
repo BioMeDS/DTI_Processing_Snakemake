@@ -1,32 +1,44 @@
 from glob import glob
 
 def get_similar_vectors(numbers):
-    zero_triplets = []
-    similar_triplets_lists = []
-    current_similar_triplets = []
+    """
+    Get indices of 0-vectors and indices of consecutive similar vectors in a list of vectors.
+    Input vectors are given as list of lists with components in sublists (as lines read from the bvec file).
+    A vector is considered similar to the previous one if it has the same numbers in the same order.
+    Example:
+    numbers = [
+        [0, 1, 1, 1, 4, 4, 0, 7],
+        [0, 2, 2, 2, 5, 5, 0, 8],
+        [0, 3, 3, 3, 6, 6, 0, 9]
+    ]
+    get_similar_vectors(numbers) -> ([0,6], [[1, 2, 3], [4, 5], [7]])
+    """
+    zero_indices = []
+    replicate_indices = []
+    current_vector = []
 
     for i in range(len(numbers[0])):
-        triplet = [numbers[j][i] for j in range(3)]
+        vector = [numbers[j][i] for j in range(3)]
 
         # Check if all numbers in triplet are 0
-        if all(num == 0 for num in triplet):
-            zero_triplets.append(i)
+        if all(num == 0 for num in vector):
+            zero_indices.append(i)
         else:
             # If the current triplet is not all zeros, check if it's similar to the previous one
-            if i > 0 and triplet == [numbers[j][i-1] for j in range(3)]:
+            if i > 0 and vector == [numbers[j][i-1] for j in range(3)]:
                 # If similar, append to the current list
-                current_similar_triplets.append(i)
+                current_vector.append(i)
             else:
                 # If not similar, append the current list to similar_triplets_lists and start a new list
-                if current_similar_triplets:
-                    similar_triplets_lists.append(current_similar_triplets)
-                current_similar_triplets = [i] # Start a new list with the current index
+                if current_vector:
+                    replicate_indices.append(current_vector)
+                current_vector = [i] # Start a new list with the current index
 
     # Append the last list of indices if it's not empty
-    if current_similar_triplets:
-        similar_triplets_lists.append(current_similar_triplets)
+    if current_vector:
+        replicate_indices.append(current_vector)
 
-    return zero_triplets, similar_triplets_lists
+    return zero_indices, replicate_indices
 
 def generate_config():
     niftis = glob("origs/*DTI*AP*.nii*")
