@@ -48,16 +48,17 @@ For the b0 volumes in PA direction, only a NIfTI and a .json file are necessary.
 
 ## For DTI_Snakemake_old_prot.smk:
 
-All files should be named after this scheme: `017_diff800_PA.ext`
+All files should be named after this scheme: `017_ep2d_diff800_PA.ext`
 
 With:
 - `017`: Sample ID
+- `ep2d`: Fixed value, used internally to split the filenames
 - `diff800`: Fixed name part + b-value
 - `PA`: Phase-encoding direction (either AP or PA)
   
 ## Naming flexibility
 
-I will keep improving the workflow so that it allows for a more flexible naming of the input files. As of now, certain additional parts, like `_long`, `_iso`, `_ep2d` or `_2.2` may also be contained in the file names without causing trouble.
+I will keep improving the workflow so that it allows for a more flexible naming of the input files. As of now, certain additional parts, like `_long`, `_iso`, or `_2.2` may also be contained in the file names without causing trouble.
 
 
 # Config.yml
