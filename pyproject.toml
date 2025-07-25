@@ -1,0 +1,9 @@
+[project]
+name = "dti-processing-snakemake"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "snakemake>=9.8.1",
+]
