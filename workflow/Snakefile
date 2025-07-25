@@ -1,0 +1,110 @@
+import helpers
+
+config = {"ROI_params": "35 60 33 60 0 -1 0 -1"}
+
+rule extract_roi:
+    input:
+        "sub-{sub}/dwi/sub-{sub}_dir-{dir}_dwi.nii.gz"
+    output:
+        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-{dir}_dwi.nii.gz"
+    params:
+        roi_params=config["ROI_params"]
+    shell:
+        "fslroi {input} {output} {params.roi_params}"
+
+rule extract_b0:
+    input:
+        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-{dir}_dwi.nii.gz"
+    output:
+        "derivatives/dti_smk/sub-{sub}/b0/{dir}_{frame}.nii.gz"
+    shell:
+        "fslroi {input} {output} {wildcards.frame} 1"
+
+rule combine_b0:
+    input:
+        lambda wc: helpers.get_b0_inputs(wc.sub,"ap") + helpers.get_b0_inputs(wc.sub,"pa")
+    output:
+        "derivatives/dti_smk/sub-{sub}/topup/b0.nii.gz"
+    shell:
+        "fslmerge -t {output} {input}"
+
+rule create_acqparam:
+    input:
+        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.bval",
+        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.json",
+        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.bval",
+        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.json",
+    output:
+        "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt"
+    script:
+        "scripts/create_acqparam.py"
+
+rule topup:
+    input:
+        nifti = "derivatives/dti_smk/sub-{sub}/topup/b0.nii.gz",
+        acqp = "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt",
+    output:
+        coef = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_fieldcoef.nii.gz",
+        movpar = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_movpar.txt",
+        hifi = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi.nii.gz",
+        mean = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi_mean.nii.gz",
+    params:
+        out = "derivatives/dti_smk/sub-{sub}/topup/b0_topup",
+        iout = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi",
+    shell:
+        "topup --imain={input.nifti} --datain={input.acqp} --config=b02b0_4.cnf --out={params.out} --iout={params.iout}"
+
+rule dummy_mask:
+    input:
+        "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi_mean.nii.gz",
+    output:
+        "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz"
+    shell:
+        "fslmaths {input} -mul 0 -add 1 {output}"
+
+rule create_index:
+    input:
+        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.bval",
+        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.bval",
+    output:
+        "derivatives/dti_smk/sub-{sub}/eddy/index.txt"
+    script:
+        "scripts/create_index.py"
+
+rule combine_ap_pa:
+    input:
+        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-ap_dwi.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-pa_dwi.nii.gz",
+    output:
+        "derivatives/dti_smk/sub-{sub}/eddy/ap_pa.nii.gz"
+    shell:
+        "fslmerge -t {output} {input}"
+
+rule combine_bval_bvec:
+    input:
+        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.{bv}",
+        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.{bv}",
+    output:
+        "derivatives/dti_smk/sub-{sub}/eddy/combined.{bv}"
+    shell:
+        "paste -d ' ' {input} | tr -d $'\r' >{output}"
+
+
+rule eddy:
+    input:
+        image = "derivatives/dti_smk/sub-{sub}/eddy/ap_pa.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
+        acqp = "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt",
+        index = "derivatives/dti_smk/sub-{sub}/eddy/index.txt",
+        bvec = "derivatives/dti_smk/sub-{sub}/eddy/combined.bvec",
+        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
+    output:
+        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.eddy_rotated_bvecs",
+    params:
+        topup = "derivatives/dti_smk/sub-{sub}/topup/b0_topup",
+        out = "derivatives/dti_smk/sub-{sub}/eddy/ec_data",
+    resources:
+        runtime = 600
+    shell:
+        "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=50"
