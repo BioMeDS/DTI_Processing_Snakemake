@@ -108,3 +108,16 @@ rule eddy:
         runtime = 600
     shell:
         "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=50"
+
+rule dtifit:
+    input:
+        bvec = "derivatives/dti_smk/sub-{sub}/eddy/combined.bvec",
+        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
+        data = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
+    output:
+        "derivatives/dti_smk/sub-{sub}/dtifit/fit_tensor.nii.gz",
+    params:
+        out = "derivatives/dti_smk/sub-{sub}/dtifit/fit",
+    shell:
+        "dtifit -k {input.data} -o {params.out} -m {input.mask} -r {input.bvec} -b {input.bval} --sse --save_tensor"
