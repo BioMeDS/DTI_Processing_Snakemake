@@ -1,6 +1,6 @@
 import helpers
 
-config = {"ROI_params": "35 60 33 60 0 -1 0 -1"}
+config = {"ROI_params": "0 -1 0 -1 0 -1 0 -1"}
 
 rule extract_roi:
     input:
@@ -107,7 +107,7 @@ rule eddy:
     resources:
         runtime = 600
     shell:
-        "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=50"
+        "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1"
 
 rule dtifit:
     input:

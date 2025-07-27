@@ -24,8 +24,8 @@ ap_readout_time = get_readout_time(ap_json)
 pa_readout_time = get_readout_time(pa_json)
 ap_b0s = get_b0s(ap_bval)
 pa_b0s = get_b0s(pa_bval)
-ap_line = f"0 1 0 {ap_readout_time}\n"
-pa_line = f"0 -1 0 {pa_readout_time}\n"
+ap_line = f"0 -1 0 {ap_readout_time}\n"
+pa_line = f"0 1 0 {pa_readout_time}\n"
 
 with open(acqparam, "w") as file:
     for i in range(ap_b0s):
