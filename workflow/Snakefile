@@ -107,7 +107,7 @@ rule eddy:
     resources:
         runtime = 600
     shell:
-        "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1"
+        "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1 --repol"
 
 rule dtifit:
     input:
