@@ -111,7 +111,7 @@ rule eddy:
 
 rule dtifit:
     input:
-        bvec = "derivatives/dti_smk/sub-{sub}/eddy/combined.bvec",
+        bvec = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.eddy_rotated_bvecs",
         bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
         data = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
         mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
