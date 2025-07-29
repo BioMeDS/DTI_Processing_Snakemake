@@ -13,3 +13,14 @@ def get_b0_inputs(sub, dir):
         f"derivatives/dti_smk/sub-{sub}/b0/{dir}_{frame:04d}.nii.gz"
         for frame in indices
     ]
+
+
+def all_outputs():
+    inputs = glob("sub-*/dwi/*_dir-ap_dwi.nii.gz")
+    outprefix = ["derivatives/dti_smk/" + x.split("/")[0] for x in inputs]
+    outfiles = [
+        "eddy/ec_data.qc/qc.json",
+        "dtifit/fit_tensor.nii.gz",
+        "bedpostx.bedpostX/nodif_brain_mask.nii.gz",
+    ]
+    return [f"{p}/{f}" for p in outprefix for f in outfiles]

@@ -2,6 +2,9 @@ import helpers
 
 config = {"ROI_params": "0 -1 0 -1 0 -1 0 -1"}
 
+rule all:
+    input: helpers.all_outputs()
+
 rule extract_roi:
     input:
         "sub-{sub}/dwi/sub-{sub}_dir-{dir}_dwi.nii.gz"
