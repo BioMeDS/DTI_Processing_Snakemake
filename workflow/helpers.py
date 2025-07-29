@@ -7,17 +7,19 @@ def get_b0_indices(filename):
     return [i for i, x in enumerate(bvals) if float(x) == 0.0]
 
 
-def get_b0_inputs(sub, dir):
-    indices = get_b0_indices(f"sub-{sub}/dwi/sub-{sub}_dir-{dir}_dwi.bval")
+def get_b0_inputs(sub, ses, dir):
+    indices = get_b0_indices(
+        f"sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-{dir}_dwi.bval"
+    )
     return [
-        f"derivatives/dti_smk/sub-{sub}/b0/{dir}_{frame:04d}.nii.gz"
+        f"derivatives/dti_smk/sub-{sub}/ses-{ses}/b0/{dir}_{frame:04d}.nii.gz"
         for frame in indices
     ]
 
 
 def all_outputs():
-    inputs = glob("sub-*/dwi/*_dir-ap_dwi.nii.gz")
-    outprefix = ["derivatives/dti_smk/" + x.split("/")[0] for x in inputs]
+    inputs = glob("sub-*/ses-*/dwi/*_dir-AP_dwi.nii.gz")
+    outprefix = ["derivatives/dti_smk/" + "/".join(x.split("/")[:2]) for x in inputs]
     outfiles = [
         "eddy/ec_data.qc/qc.json",
         "dtifit/fit_tensor.nii.gz",

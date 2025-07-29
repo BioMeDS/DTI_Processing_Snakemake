@@ -1,15 +1,18 @@
 import helpers
 
-config = {"ROI_params": "0 -1 0 -1 0 -1 0 -1"}
+config = {
+    "ROI_params": "0 -1 0 -1 0 -1 0 -1",
+    "bedpostx": "bedpostx_gpu"
+}
 
 rule all:
     input: helpers.all_outputs()
 
 rule extract_roi:
     input:
-        "sub-{sub}/dwi/sub-{sub}_dir-{dir}_dwi.nii.gz"
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-{dir}_dwi.nii.gz"
     output:
-        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-{dir}_dwi.nii.gz"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/roi/{dir}.nii.gz"
     params:
         roi_params=config["ROI_params"]
     shell:
@@ -17,96 +20,96 @@ rule extract_roi:
 
 rule extract_b0:
     input:
-        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-{dir}_dwi.nii.gz"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/roi/{dir}.nii.gz"
     output:
-        "derivatives/dti_smk/sub-{sub}/b0/{dir}_{frame}.nii.gz"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/b0/{dir}_{frame}.nii.gz"
     shell:
         "fslroi {input} {output} {wildcards.frame} 1"
 
 rule combine_b0:
     input:
-        lambda wc: helpers.get_b0_inputs(wc.sub,"ap") + helpers.get_b0_inputs(wc.sub,"pa")
+        lambda wc: helpers.get_b0_inputs(wc.sub,wc.ses,"AP") + helpers.get_b0_inputs(wc.sub,wc.ses,"PA")
     output:
-        "derivatives/dti_smk/sub-{sub}/topup/b0.nii.gz"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0.nii.gz"
     shell:
         "fslmerge -t {output} {input}"
 
 rule create_acqparam:
     input:
-        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.bval",
-        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.json",
-        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.bval",
-        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.json",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-AP_dwi.bval",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-AP_dwi.json",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-PA_dwi.bval",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-PA_dwi.json",
     output:
-        "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/acqparam.txt"
     script:
         "scripts/create_acqparam.py"
 
 rule topup:
     input:
-        nifti = "derivatives/dti_smk/sub-{sub}/topup/b0.nii.gz",
-        acqp = "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt",
+        nifti = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0.nii.gz",
+        acqp = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/acqparam.txt",
     output:
-        coef = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_fieldcoef.nii.gz",
-        movpar = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_movpar.txt",
-        hifi = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi.nii.gz",
-        mean = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi_mean.nii.gz",
+        coef = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup_fieldcoef.nii.gz",
+        movpar = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup_movpar.txt",
+        hifi = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup_hifi.nii.gz",
+        mean = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup_hifi_mean.nii.gz",
     params:
-        out = "derivatives/dti_smk/sub-{sub}/topup/b0_topup",
-        iout = "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi",
+        out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup",
+        iout = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup_hifi",
     shell:
         "topup --imain={input.nifti} --datain={input.acqp} --config=b02b0_4.cnf --out={params.out} --iout={params.iout}"
 
 rule dummy_mask:
     input:
-        "derivatives/dti_smk/sub-{sub}/topup/b0_topup_hifi_mean.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup_hifi_mean.nii.gz",
     output:
-        "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/dummy_mask.nii.gz"
     shell:
         "fslmaths {input} -mul 0 -add 1 {output}"
 
 rule create_index:
     input:
-        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.bval",
-        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.bval",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-AP_dwi.bval",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-PA_dwi.bval",
     output:
-        "derivatives/dti_smk/sub-{sub}/eddy/index.txt"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/index.txt"
     script:
         "scripts/create_index.py"
 
 rule combine_ap_pa:
     input:
-        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-ap_dwi.nii.gz",
-        "derivatives/dti_smk/sub-{sub}/roi/sub-{sub}_dir-pa_dwi.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/roi/AP.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/roi/PA.nii.gz",
     output:
-        "derivatives/dti_smk/sub-{sub}/eddy/ap_pa.nii.gz"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/AP_PA.nii.gz"
     shell:
         "fslmerge -t {output} {input}"
 
 rule combine_bval_bvec:
     input:
-        "sub-{sub}/dwi/sub-{sub}_dir-ap_dwi.{bv}",
-        "sub-{sub}/dwi/sub-{sub}_dir-pa_dwi.{bv}",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-AP_dwi.{bv}",
+        "sub-{sub}/ses-{ses}/dwi/sub-{sub}_ses-{ses}_dir-PA_dwi.{bv}",
     output:
-        "derivatives/dti_smk/sub-{sub}/eddy/combined.{bv}"
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/combined.{bv}"
     shell:
         "paste -d ' ' {input} | tr -d $'\r' >{output}"
 
 
 rule eddy:
     input:
-        image = "derivatives/dti_smk/sub-{sub}/eddy/ap_pa.nii.gz",
-        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
-        acqp = "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt",
-        index = "derivatives/dti_smk/sub-{sub}/eddy/index.txt",
-        bvec = "derivatives/dti_smk/sub-{sub}/eddy/combined.bvec",
-        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
+        image = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/AP_PA.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/dummy_mask.nii.gz",
+        acqp = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/acqparam.txt",
+        index = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/index.txt",
+        bvec = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/combined.bvec",
+        bval = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/combined.bval",
     output:
-        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
-        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.eddy_rotated_bvecs",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.eddy_rotated_bvecs",
     params:
-        topup = "derivatives/dti_smk/sub-{sub}/topup/b0_topup",
-        out = "derivatives/dti_smk/sub-{sub}/eddy/ec_data",
+        topup = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup",
+        out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data",
     resources:
         runtime = 600
     shell:
@@ -114,16 +117,16 @@ rule eddy:
 
 rule eddy_qc:
     input:
-        eddy_corrected = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
-        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
-        acqp = "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt",
-        index = "derivatives/dti_smk/sub-{sub}/eddy/index.txt",
-        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
+        eddy_corrected = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/dummy_mask.nii.gz",
+        acqp = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/acqparam.txt",
+        index = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/index.txt",
+        bval = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/combined.bval",
     output:
-        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.qc/qc.json",
-        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.qc/qc.pdf",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.qc/qc.json",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.qc/qc.pdf",
     params:
-        eddy_out = "derivatives/dti_smk/sub-{sub}/eddy/ec_data",
+        eddy_out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data",
     shell:
         """
         rmdir {params.eddy_out}.qc # remove folder created by snakemake or eddy_quad will fail
@@ -132,28 +135,28 @@ rule eddy_qc:
 
 rule dtifit:
     input:
-        bvec = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.eddy_rotated_bvecs",
-        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
-        data = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
-        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
+        bvec = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.eddy_rotated_bvecs",
+        bval = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/combined.bval",
+        data = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/dummy_mask.nii.gz",
     output:
-        "derivatives/dti_smk/sub-{sub}/dtifit/fit_tensor.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/dtifit/fit_tensor.nii.gz",
     params:
-        out = "derivatives/dti_smk/sub-{sub}/dtifit/fit",
+        out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/dtifit/fit",
     shell:
         "dtifit -k {input.data} -o {params.out} -m {input.mask} -r {input.bvec} -b {input.bval} --sse --save_tensor"
 
 rule create_bedpostx_dir:
     input:
-        bvec = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.eddy_rotated_bvecs",
-        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
-        data = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
-        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
+        bvec = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.eddy_rotated_bvecs",
+        bval = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/combined.bval",
+        data = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/dummy_mask.nii.gz",
     output:
-        bvec = "derivatives/dti_smk/sub-{sub}/bedpostx/bvecs",
-        bval = "derivatives/dti_smk/sub-{sub}/bedpostx/bvals",
-        data = "derivatives/dti_smk/sub-{sub}/bedpostx/data.nii.gz",
-        mask = "derivatives/dti_smk/sub-{sub}/bedpostx/nodif_brain_mask.nii.gz",
+        bvec = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/bvecs",
+        bval = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/bvals",
+        data = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/nodif_brain_mask.nii.gz",
     shell:
         """
         cp {input.bvec} {output.bvec}
@@ -164,15 +167,15 @@ rule create_bedpostx_dir:
 
 rule bedpostx:
     input:
-        bvec = "derivatives/dti_smk/sub-{sub}/bedpostx/bvecs",
-        bval = "derivatives/dti_smk/sub-{sub}/bedpostx/bvals",
-        data = "derivatives/dti_smk/sub-{sub}/bedpostx/data.nii.gz",
-        mask = "derivatives/dti_smk/sub-{sub}/bedpostx/nodif_brain_mask.nii.gz",
+        bvec = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/bvecs",
+        bval = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/bvals",
+        data = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/nodif_brain_mask.nii.gz",
     output:
-        "derivatives/dti_smk/sub-{sub}/bedpostx.bedpostX/nodif_brain_mask.nii.gz",
+        "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx.bedpostX/nodif_brain_mask.nii.gz",
     resources:
         runtime = 1000
     params:
-        dir = "derivatives/dti_smk/sub-{sub}/bedpostx",
+        dir = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx",
     shell:
-        "bedpostx {params.dir}"
+        config["bedpostx"] + " {params.dir}"
