@@ -136,3 +136,37 @@ rule dtifit:
         out = "derivatives/dti_smk/sub-{sub}/dtifit/fit",
     shell:
         "dtifit -k {input.data} -o {params.out} -m {input.mask} -r {input.bvec} -b {input.bval} --sse --save_tensor"
+
+rule create_bedpostx_dir:
+    input:
+        bvec = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.eddy_rotated_bvecs",
+        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
+        data = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
+    output:
+        bvec = "derivatives/dti_smk/sub-{sub}/bedpostx/bvecs",
+        bval = "derivatives/dti_smk/sub-{sub}/bedpostx/bvals",
+        data = "derivatives/dti_smk/sub-{sub}/bedpostx/data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/bedpostx/nodif_brain_mask.nii.gz",
+    shell:
+        """
+        cp {input.bvec} {output.bvec}
+        cp {input.bval} {output.bval}
+        cp {input.data} {output.data}
+        cp {input.mask} {output.mask}
+        """
+
+rule bedpostx:
+    input:
+        bvec = "derivatives/dti_smk/sub-{sub}/bedpostx/bvecs",
+        bval = "derivatives/dti_smk/sub-{sub}/bedpostx/bvals",
+        data = "derivatives/dti_smk/sub-{sub}/bedpostx/data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/bedpostx/nodif_brain_mask.nii.gz",
+    output:
+        "derivatives/dti_smk/sub-{sub}/bedpostx.bedpostX/nodif_brain_mask.nii.gz",
+    resources:
+        runtime = 1000
+    params:
+        dir = "derivatives/dti_smk/sub-{sub}/bedpostx",
+    shell:
+        "bedpostx {params.dir}"
