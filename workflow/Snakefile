@@ -109,6 +109,21 @@ rule eddy:
     shell:
         "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1 --repol"
 
+rule eddy_qc:
+    input:
+        eddy_corrected = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.nii.gz",
+        mask = "derivatives/dti_smk/sub-{sub}/eddy/dummy_mask.nii.gz",
+        acqp = "derivatives/dti_smk/sub-{sub}/topup/acqparam.txt",
+        index = "derivatives/dti_smk/sub-{sub}/eddy/index.txt",
+        bval = "derivatives/dti_smk/sub-{sub}/eddy/combined.bval",
+    output:
+        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.qc/qc.json",
+        "derivatives/dti_smk/sub-{sub}/eddy/ec_data.qc/qc.pdf",
+    params:
+        eddy_out = "derivatives/dti_smk/sub-{sub}/eddy/ec_data",
+    shell:
+        "eddy_quad {params.eddy_out} -idx {input.index} -m {input.mask} -par {input.acqp} -b {input.bval}"
+
 rule dtifit:
     input:
         bvec = "derivatives/dti_smk/sub-{sub}/eddy/ec_data.eddy_rotated_bvecs",
