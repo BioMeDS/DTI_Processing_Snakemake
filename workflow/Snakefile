@@ -125,7 +125,10 @@ rule eddy_qc:
     params:
         eddy_out = "derivatives/dti_smk/sub-{sub}/eddy/ec_data",
     shell:
-        "eddy_quad {params.eddy_out} -idx {input.index} -m {input.mask} -par {input.acqp} -b {input.bval}"
+        """
+        rmdir {params.eddy_out}.qc # remove folder created by snakemake or eddy_quad will fail
+        eddy_quad {params.eddy_out} -idx {input.index} -m {input.mask} -par {input.acqp} -b {input.bval}
+        """
 
 rule dtifit:
     input:
