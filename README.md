@@ -45,3 +45,21 @@ There are currently still some limitations:
 - the session level is not optional ([`_ses-<label>`](https://bids-specification.readthedocs.io/en/latest/appendices/entities.html#ses))
 - the PhaseEncodingDirection has to be in `_dir-<label>` and only "AP" and "PA" are supported (in uppercase letters)
 - no additional file name components are currently accepted (acq, rec, run, part, chunk)
+
+# For developers
+
+Install dependencies with:
+
+```bash
+uv sync
+```
+
+Run tests with:
+
+```bash
+uv run python -m unittest
+```
+
+## Contributing
+
+Contributions are welcome, including but not limited to bug fixes, new features, documentation, and tests.
