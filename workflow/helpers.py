@@ -1,9 +1,10 @@
 from scripts.utils import get_bvals
+from glob import glob
 
 
 def get_b0_indices(filename):
     bvals = get_bvals(filename)
-    return [i for i, x in enumerate(bvals) if x == "0.0"]
+    return [i for i, x in enumerate(bvals) if float(x) == 0.0]
 
 
 def get_b0_inputs(sub, dir):

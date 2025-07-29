@@ -11,6 +11,6 @@ bvals = get_bvals(ap_bval) + get_bvals(pa_bval)
 with open(index_file, "w") as file:
     bval_counter = 0
     for b in bvals:
-        if b == "0.0":
+        if float(b) == 0.0:
             bval_counter += 1
         file.write(f"{bval_counter}\n")

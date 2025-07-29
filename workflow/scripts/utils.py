@@ -6,5 +6,5 @@ def get_bvals(bval_file):
 
 def get_b0s(bval_file):
     bvals = get_bvals(bval_file)
-    b0s = len([x for x in bvals if x == "0.0"])
+    b0s = len([x for x in bvals if float(x) == 0.0])
     return b0s
