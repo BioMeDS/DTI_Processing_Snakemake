@@ -57,7 +57,7 @@ uv sync
 Run tests with:
 
 ```bash
-uv run python -m unittest
+uv run pytest test
 ```
 
 ## Contributing
