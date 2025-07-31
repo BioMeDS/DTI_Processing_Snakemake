@@ -1,11 +1,13 @@
 import helpers
 
-config = {
-    "ROI_params": "0 -1 0 -1 0 -1 0 -1"
-}
+if not config["ROI_params"]:
+    config["ROI_params"] = "0 -1 0 -1 0 -1 0 -1"
+
+if not config["skip_bedpostx"]:
+    config["skip_bedpostx"] = False
 
 rule all:
-    input: helpers.all_outputs()
+    input: helpers.all_outputs(skip_bedpostx=config["skip_bedpostx"])
 
 rule extract_roi:
     input:

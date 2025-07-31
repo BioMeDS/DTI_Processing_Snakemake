@@ -17,12 +17,13 @@ def get_b0_inputs(sub, ses, dir):
     ]
 
 
-def all_outputs():
+def all_outputs(skip_bedpostx=False):
     inputs = glob("sub-*/ses-*/dwi/*_dir-AP_dwi.nii.gz")
     outprefix = ["derivatives/dti_smk/" + "/".join(x.split("/")[:2]) for x in inputs]
     outfiles = [
         "eddy/ec_data.qc/qc.json",
         "dtifit/fit_tensor.nii.gz",
-        "bedpostx.bedpostX/nodif_brain_mask.nii.gz",
     ]
+    if not skip_bedpostx:
+        outfiles.append("bedpostx.bedpostX/nodif_brain_mask.nii.gz")
     return [f"{p}/{f}" for p in outprefix for f in outfiles]
