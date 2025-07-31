@@ -1,9 +1,9 @@
 import helpers
 
-if not config["ROI_params"]:
+if not "ROI_params" in config:
     config["ROI_params"] = "0 -1 0 -1 0 -1 0 -1"
 
-if not config["skip_bedpostx"]:
+if not "skip_bedpostx" in config:
     config["skip_bedpostx"] = False
 
 rule all:
