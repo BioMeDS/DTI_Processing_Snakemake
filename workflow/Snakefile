@@ -1,8 +1,7 @@
 import helpers
 
 config = {
-    "ROI_params": "0 -1 0 -1 0 -1 0 -1",
-    "bedpostx": "bedpostx_gpu"
+    "ROI_params": "0 -1 0 -1 0 -1 0 -1"
 }
 
 rule all:
@@ -178,4 +177,7 @@ rule bedpostx:
     params:
         dir = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx",
     shell:
-        config["bedpostx"] + " {params.dir}"
+        """
+        bedpostx_gpu {params.dir} ||
+        bedpostx {params.dir}
+        """
