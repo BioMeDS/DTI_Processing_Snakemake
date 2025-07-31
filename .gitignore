@@ -3,4 +3,4 @@ tmp
 .vscode
 .idea
 *.iml
-data/
+/data/
