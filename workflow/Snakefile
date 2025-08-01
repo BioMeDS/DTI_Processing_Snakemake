@@ -1,10 +1,11 @@
 import helpers
 
-if not "ROI_params" in config:
-    config["ROI_params"] = "0 -1 0 -1 0 -1 0 -1"
+default_config = {
+    "ROI_params": "0 -1 0 -1 0 -1 0 -1",
+    "skip_bedpostx": False,
+}
 
-if not "skip_bedpostx" in config:
-    config["skip_bedpostx"] = False
+config = {**default_config, **config}
 
 rule all:
     input: helpers.all_outputs(skip_bedpostx=config["skip_bedpostx"])
