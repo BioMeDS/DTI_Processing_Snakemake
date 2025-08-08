@@ -59,8 +59,9 @@ rule topup:
     params:
         out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup",
         iout = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup_hifi",
+    threads: 20
     shell:
-        "topup --imain={input.nifti} --datain={input.acqp} --config=b02b0_4.cnf --out={params.out} --iout={params.iout}"
+        "topup --nthr={threads} --imain={input.nifti} --datain={input.acqp} --config=b02b0_4.cnf --out={params.out} --iout={params.iout}"
 
 rule dummy_mask:
     input:
