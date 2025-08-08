@@ -114,8 +114,9 @@ rule eddy:
         out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data",
     resources:
         runtime = 600
+    threads: 20
     shell:
-        "eddy --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1 --repol"
+        "eddy --nthr {threads} --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1 --repol"
 
 rule eddy_qc:
     input:
