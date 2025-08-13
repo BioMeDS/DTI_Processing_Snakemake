@@ -1,5 +1,7 @@
 from scripts.utils import get_bvals
 from glob import glob
+import os
+import subprocess as sp
 
 
 def get_b0_indices(filename):
@@ -27,3 +29,19 @@ def all_outputs(skip_bedpostx=False):
     if not skip_bedpostx:
         outfiles.append("bedpostx.bedpostX/nodif_brain_mask.nii.gz")
     return [f"{p}/{f}" for p in outprefix for f in outfiles]
+
+
+def has_usable_gpu() -> bool:
+    """Determine whether a gpu is available, that is usable for eddy and bedpostx
+    The code for testing is adopted from $FSLDIR/bin/eddy (fsl version 6.0.7.18)
+
+    Returns
+    -------
+    bool
+        True if a usable GPU is found
+    """
+    fsldir = os.environ["FSLDIR"]
+    find_cuda = os.path.join(fsldir, "bin", "find_cuda_exe")
+    eddy_cuda = sp.check_output((find_cuda, "eddy_cuda"), text=True).strip()
+
+    return eddy_cuda != ""

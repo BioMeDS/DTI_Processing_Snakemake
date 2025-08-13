@@ -6,6 +6,7 @@ default_config = {
 }
 
 config = {**default_config, **config}
+gpu_available = helpers.has_usable_gpu()
 
 rule all:
     input: helpers.all_outputs(skip_bedpostx=config["skip_bedpostx"])
@@ -115,7 +116,7 @@ rule eddy:
         out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data",
     resources:
         runtime = 600
-    threads: 20
+    threads: 1 if gpu_available else 20
     shell:
         "eddy --nthr={threads} --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1 --repol"
 
@@ -169,6 +170,10 @@ rule create_bedpostx_dir:
         cp {input.mask} {output.mask}
         """
 
+bedpostx = "bedpostx"
+if gpu_available:
+    bedpostx += "_gpu"
+
 rule bedpostx:
     input:
         bvec = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx/bvecs",
@@ -183,6 +188,5 @@ rule bedpostx:
         dir = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx",
     shell:
         """
-        bedpostx_gpu {params.dir} ||
-        bedpostx {params.dir}
+        {bedpostx} {params.dir}
         """
