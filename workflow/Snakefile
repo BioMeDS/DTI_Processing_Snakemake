@@ -116,6 +116,7 @@ rule eddy:
         out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data",
     resources:
         runtime = 600
+        gpu = 1 if gpu_available else 0
     threads: 1 if gpu_available else 20
     shell:
         "eddy --nthr={threads} --imain={input.image} --mask={input.mask} --acqp={input.acqp} --index={input.index} --bvecs={input.bvec} --bvals={input.bval} --topup={params.topup} --out={params.out} --data_is_shelled --b_range=1 --repol"
@@ -184,6 +185,7 @@ rule bedpostx:
         "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx.bedpostX/nodif_brain_mask.nii.gz",
     resources:
         runtime = 1000
+        gpu = 1 if gpu_available else 0
     params:
         dir = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx",
     shell:
