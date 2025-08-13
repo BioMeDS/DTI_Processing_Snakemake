@@ -115,7 +115,7 @@ rule eddy:
         topup = "derivatives/dti_smk/sub-{sub}/ses-{ses}/topup/b0_topup",
         out = "derivatives/dti_smk/sub-{sub}/ses-{ses}/eddy/ec_data",
     resources:
-        runtime = 600
+        runtime = 600,
         gpu = 1 if gpu_available else 0
     threads: 1 if gpu_available else 20
     shell:
@@ -184,7 +184,7 @@ rule bedpostx:
     output:
         "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx.bedpostX/nodif_brain_mask.nii.gz",
     resources:
-        runtime = 1000
+        runtime = 1000,
         gpu = 1 if gpu_available else 0
     params:
         dir = "derivatives/dti_smk/sub-{sub}/ses-{ses}/bedpostx",
